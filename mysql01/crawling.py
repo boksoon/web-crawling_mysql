@@ -2,7 +2,8 @@ import requests
 from selenium import webdriver
 from bs4 import BeautifulSoup as bs
 import time
-
+import re
+from table import INSERT_TANK
 
 def STRtoDICT(string):
     toDICT= dict()
@@ -26,7 +27,6 @@ def GETcity():
                     Accept-Encoding: gzip, deflate
                     Accept-Language: ko,en;q=0.9,en-US;q=0.8
                     Connection: keep-alive
-                    Cookie: WMONID=Me1s7WN-h4V; JSESSIONID=CSK70RG65E2gaNq8cLaVQ6mccOpiAgDbiOkidMi0L1liAMyaVt7baaGaQtl1xOHb.opwas_2_servlet_engine1; NetFunnel_ID=5002%3A200%3Akey%3D18E98F6E77EEC2591AFA80305056E81F1C97C3BFDCE1AF2724411ED520E4BB549AE4D91CFEBD8C513C28A072C1C59C75F97F4E1F8D2816B448685DFF3C519964EDA216B5A4016D80B04E5478C89AA3A7C05C4FB4A117B63488D854A91AD6BDF119EAB572EDAEC9EDB46EC5D0DE4A6F78%26nwait%3D0%26nnext%3D0%26tps%3D0%26ttl%3D0%26ip%3Dnfl.opinet.co.kr%26port%3D443
                     Host: www.opinet.co.kr
                     Referer: http://www.opinet.co.kr/user/main/mainView.do
                     Upgrade-Insecure-Requests: 1
@@ -120,17 +120,8 @@ def GETlist(city,gu):
     session.get("http://www.opinet.co.kr/")
 
     req = session.post("http://www.opinet.co.kr/searRgSelect.do", data=data, headers=headers)
-    test = bs(req.text,"html.parser")
-    results = test.select("td.rlist a")
-    for item in results:
-        script = item.attrs['href'].split('(',1)[1].split(',')
-        #INSERT_TANK(name, gu, price, self)
-        name = script[24]
-        # self : var SELF_DIV_CD 	= "Y";
-   		# price		var B027_P
-   		# name : var OS_NM 			= "브레인시티주유소";
+    
+    return req.text
+    
 
-
-															
-    return None
-
+    

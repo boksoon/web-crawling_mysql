@@ -3,19 +3,57 @@ import requests
 from bs4 import BeautifulSoup as bs
 from crawling import GETgu, GETcity, GETlist
 from table import Connect, CREATE, TRUNCATE, SEARCH_ADDR, INSERT_ADDR, INSERT_TANK
+import re
 
 
-def PrintResult(sql):
+def PrintResult(search_type, name):
     cursor = Connect()
+
+    if search_type == 'tank_search' :
+        sql = f"""
+                        SELECT CONCAT(a.CITY, '-', a.GU) 지역, t.NAME, t.PRICE, t.SELF, t.REG_DATE
+                        FROM ADDRESS a
+                        RIGHT JOIN TANK t
+                        ON a.GU = t.GU
+                        WHERE t.NAME LIKE '%{name}%'
+                        ;
+                     """
+                     
+    elif search_type == 'gu_search' :
+        sql = f"""
+                        SELECT CONCAT(a.CITY, '-', a.GU) 지역, t.NAME, t.PRICE, t.SELF, t.REG_DATE
+                        FROM ADDRESS a
+                        RIGHT JOIN TANK t
+                        ON a.GU = t.GU
+                        WHERE t.GU = '{name}'
+                        ORDER BY t.PRICE
+                        LIMIT 10 
+                        ;
+                     """
+    else:
+        print('print_result에서 문제 발생')
+        raise Exception      
+
     cursor.execute(sql)
     rows = cursor.fetchall()
     data = pd.DataFrame(rows)
-    data.rename(columns={'NAME': '주유소명', 'PRICE': '휘발유가격','SELF':'셀프주유소여부','REG_DATE':'등록일'}, inplace=True)
-    del data['NUM']
+    data.rename(columns={0: '지역', 1: '주유소명',2:'휘발유가격', 3: '셀프주유여부',4:'등록일'}, inplace=True)
+    
     print(data)
 
 
-CREATE()
+def FindVar(results,string):
+    dirty_list = re.findall(string,results)
+    clean_list = []
+    for item in dirty_list :
+        item = item.split('=')[1]
+        item = item.replace('"','').replace(' ','').replace(';','')
+        clean_list.append(item)
+
+    return clean_list
+
+
+
 
 while True:
     
@@ -45,29 +83,20 @@ while True:
     #주유소검색
     elif order == '2':
         while True:
-            search = input('[주유소검색] (1)주유소명검색, (2)저렴한주유소(TOP10), (0)이전메뉴로')
+            search = input('[주유소검색] (1)주유소명검색, (2)저렴한주유소(TOP10), (0)이전메뉴로 : ')
             
             if search == '1':
-                tank_search = input('주유소명을 입력해주세요 : ')
-                sql = """
-                        SELECT * FROM TANK
-                        WHERE NAME LIKE '%{tank_search}%'"""
-                PrintResult(sql)
+                tank_name = input('주유소명을 입력해주세요 : ')
+                
+                PrintResult('tank_search',tank_name)
+
                 break
                 
             elif search == '2':
-                gu = input('구 이름을 입력하세요 : ')
+                gu_name = input('구 이름을 입력하세요 : ')
 
-                sql = f"""
-                        SELECT CONCAT(a.CITY, '-', a.GU) 지역, t.NAME, t.PRICE, t.SELF, t.REG_DATE
-                        FROM ADDRESS a
-                        RIGHT JOIN TANK t
-                        ON a.GU = t.GU
-                        ORDER BY t.PRICE
-                        LIMIT 10
-                        WHERE t.GU = {gu}
-                     """            
-                PrintResult(sql)
+                      
+                PrintResult('gu_search',gu_name)
 
                 break
                 
@@ -88,8 +117,16 @@ while True:
 
             gu_list = [ gu['SIGUNGU_NM'] for gu in gu_json ]
             for gu in gu_list :
-                INSERT_ADDR(city, gu)       
-             #   INSERT_TANK(name, gu, price, self)   GETlist(city,gu)
+                INSERT_ADDR(city, gu)
+                results = GETlist(city,gu)
+
+                names = FindVar(results,'var OS_NM .*;')
+                prices = FindVar(results,'var B027_P .*;')
+                selfs = FindVar(results,'var SELF_DIV_CD .*;')
+                
+                for name,price,_self in zip(names,prices,selfs[:41]) :
+                     INSERT_TANK(name, gu, price, _self)      
+             
         
 
     elif order == '0':

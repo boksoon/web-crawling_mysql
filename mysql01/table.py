@@ -10,6 +10,13 @@ def Connect():
 
 def CREATE():
     cursor = Connect()
+
+    sql = """
+        DROP TABLE if exists oil.ADDRESS, oil.TANK;
+    """
+    cursor.execute(sql)
+
+    
     sql1= """
         CREATE TABLE IF NOT EXISTS oil.ADDRESS (
                     CITY VARCHAR(10),
@@ -18,7 +25,7 @@ def CREATE():
         """
     sql2="""
         CREATE TABLE IF NOT EXISTS oil.TANK (
-                    NAME VARCHAR(10),
+                    NAME VARCHAR(30),
                     GU VARCHAR(10),
                     PRICE FLOAT,
                     SELF CHAR(1),
@@ -41,7 +48,7 @@ def INSERT_TANK(name, gu, price, self):
         
     sql = f"""
         INSERT INTO oil.TANK
-        VALUES(0,'{name}','{gu}',{price},'{self}',current_timestamp());"""
+        VALUES('{name}','{gu}',{price},'{self}',current_timestamp());"""
     cursor.execute(sql)
     
     
