@@ -53,7 +53,7 @@ def FindVar(results,string):
     return clean_list
 
 
-
+# 시작
 
 while True:
     
@@ -75,8 +75,7 @@ while True:
                 if _self in ('Y','N') :
                     break
             except:
-                print('Y나 N을 입력해주세요')
-            
+                print('Y나 N을 입력해주세요')  
   
         INSERT_TANK(name, gu, price, _self)
 
@@ -87,17 +86,12 @@ while True:
             
             if search == '1':
                 tank_name = input('주유소명을 입력해주세요 : ')
-                
                 PrintResult('tank_search',tank_name)
-
                 break
                 
             elif search == '2':
-                gu_name = input('구 이름을 입력하세요 : ')
-
-                      
+                gu_name = input('구 이름을 입력하세요 : ')                     
                 PrintResult('gu_search',gu_name)
-
                 break
                 
             elif search == '0':
@@ -126,8 +120,7 @@ while True:
                 
                 for name,price,_self in zip(names,prices,selfs[:41]) :
                      INSERT_TANK(name, gu, price, _self)      
-             
-        
+    
 
     elif order == '0':
         print('종료되었습니다')
